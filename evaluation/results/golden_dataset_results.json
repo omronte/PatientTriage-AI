@@ -1,0 +1,800 @@
+{
+  "metrics": {
+    "dataset_size": 22,
+    "triage_agreement_count": 12,
+    "triage_agreement_rate": 0.5455,
+    "under_triage_count": 6,
+    "under_triage_rate": 0.2727,
+    "over_triage_count": 4,
+    "over_triage_rate": 0.1818,
+    "safety_rule_trigger_rate": 0.6818,
+    "low_confidence_case_rate": 0.0455,
+    "conservative_escalation_rate": 0.5909,
+    "missing_data_detection_rate": 0.2727,
+    "pediatric_routing_correct": true,
+    "geriatric_routing_correct": true,
+    "zero_history_handling_correct": true,
+    "confidence_distribution": {
+      "HIGH": 9,
+      "MEDIUM": 12,
+      "LOW": 1
+    },
+    "scenario_coverage_count": 20,
+    "data_leakage_violations": [],
+    "data_leakage_clean": true
+  },
+  "safety_critical": {
+    "critical_under_triage_count": 0,
+    "critical_rule_miss_count": 0,
+    "pediatric_safety_miss_count": 0,
+    "geriatric_safety_miss_count": 0,
+    "missing_data_safety_miss_count": 0,
+    "zero_history_safety_miss_count": 0,
+    "vital_deterioration_miss_count": 1,
+    "low_confidence_escalation_miss_count": 0,
+    "critical_miss_patient_ids": [],
+    "critical_rule_miss_patient_ids": []
+  },
+  "confusion_matrix": {
+    "1": {
+      "1": 6,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0
+    },
+    "2": {
+      "1": 3,
+      "2": 2,
+      "3": 0,
+      "4": 0,
+      "5": 0
+    },
+    "3": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 5
+    },
+    "4": {
+      "1": 0,
+      "2": 1,
+      "3": 0,
+      "4": 1,
+      "5": 1
+    },
+    "5": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 3
+    }
+  },
+  "scenario_breakdown": {
+    "PEDIATRIC_AGE_ADJUSTMENT": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        1
+      ],
+      "predicted_esi": [
+        1
+      ]
+    },
+    "GERIATRIC_AMBIGUOUS_ZERO_HISTORY": {
+      "count": 1,
+      "agreement": 0,
+      "under_triage": 0,
+      "over_triage": 1,
+      "safety_triggered": 1,
+      "expected_esi": [
+        2
+      ],
+      "predicted_esi": [
+        1
+      ]
+    },
+    "VITALS_OVERRIDE_NLP": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        1
+      ],
+      "predicted_esi": [
+        1
+      ]
+    },
+    "ZERO_HISTORY": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        4
+      ],
+      "predicted_esi": [
+        4
+      ]
+    },
+    "RICH_HISTORY": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 0,
+      "expected_esi": [
+        5
+      ],
+      "predicted_esi": [
+        5
+      ]
+    },
+    "PARTIAL_HISTORY": {
+      "count": 1,
+      "agreement": 0,
+      "under_triage": 1,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        3
+      ],
+      "predicted_esi": [
+        5
+      ]
+    },
+    "AMBIGUOUS_PRESENTATION": {
+      "count": 1,
+      "agreement": 0,
+      "under_triage": 1,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        3
+      ],
+      "predicted_esi": [
+        5
+      ]
+    },
+    "MISSING_VITAL": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        2
+      ],
+      "predicted_esi": [
+        2
+      ]
+    },
+    "CONFLICTING_SIGNALS": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        1
+      ],
+      "predicted_esi": [
+        1
+      ]
+    },
+    "HIGH_CONFIDENCE": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        1
+      ],
+      "predicted_esi": [
+        1
+      ]
+    },
+    "LOW_CONFIDENCE": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        2
+      ],
+      "predicted_esi": [
+        2
+      ]
+    },
+    "STABLE_LOW_RISK": {
+      "count": 2,
+      "agreement": 1,
+      "under_triage": 1,
+      "over_triage": 0,
+      "safety_triggered": 0,
+      "expected_esi": [
+        4,
+        5
+      ],
+      "predicted_esi": [
+        5,
+        5
+      ]
+    },
+    "CLINICIAN_ACCEPT": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 0,
+      "expected_esi": [
+        5
+      ],
+      "predicted_esi": [
+        5
+      ]
+    },
+    "CLINICIAN_OVERRIDE": {
+      "count": 1,
+      "agreement": 0,
+      "under_triage": 1,
+      "over_triage": 0,
+      "safety_triggered": 0,
+      "expected_esi": [
+        3
+      ],
+      "predicted_esi": [
+        5
+      ]
+    },
+    "PEDIATRIC_MISSING_DATA": {
+      "count": 2,
+      "agreement": 0,
+      "under_triage": 0,
+      "over_triage": 2,
+      "safety_triggered": 2,
+      "expected_esi": [
+        4,
+        2
+      ],
+      "predicted_esi": [
+        2,
+        1
+      ]
+    },
+    "GERIATRIC_RICH_HISTORY": {
+      "count": 1,
+      "agreement": 0,
+      "under_triage": 0,
+      "over_triage": 1,
+      "safety_triggered": 1,
+      "expected_esi": [
+        2
+      ],
+      "predicted_esi": [
+        1
+      ]
+    },
+    "MULTI_FACTOR_RISK": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        1
+      ],
+      "predicted_esi": [
+        1
+      ]
+    },
+    "WAIT_THRESHOLD": {
+      "count": 1,
+      "agreement": 0,
+      "under_triage": 1,
+      "over_triage": 0,
+      "safety_triggered": 0,
+      "expected_esi": [
+        3
+      ],
+      "predicted_esi": [
+        5
+      ]
+    },
+    "VITAL_DETERIORATION": {
+      "count": 1,
+      "agreement": 0,
+      "under_triage": 1,
+      "over_triage": 0,
+      "safety_triggered": 0,
+      "expected_esi": [
+        3
+      ],
+      "predicted_esi": [
+        5
+      ]
+    },
+    "CRITICAL_SAFETY_RULE": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        1
+      ],
+      "predicted_esi": [
+        1
+      ]
+    }
+  },
+  "results": [
+    {
+      "patient_id": "DEMO-P001",
+      "scenario_tag": "PEDIATRIC_AGE_ADJUSTMENT",
+      "expected_triage_level": 1,
+      "predicted_triage_level": 1,
+      "expected_confidence_band": "MEDIUM",
+      "predicted_confidence_band": "HIGH",
+      "confidence_score": 0.8678,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "safety_flags": [
+        "PEDIATRIC_AGE_ADJUSTED",
+        "CRITICAL_SAFETY_RULE"
+      ],
+      "primary_reason": "Severe hemodynamic instability (HR 145 bpm)",
+      "age_group": "pediatric",
+      "history_availability": "rich",
+      "missing_fields": [],
+      "missing_data_penalty": 0.0,
+      "nlp_ambiguity_penalty": 0.12
+    },
+    {
+      "patient_id": "DEMO-P002",
+      "scenario_tag": "GERIATRIC_AMBIGUOUS_ZERO_HISTORY",
+      "expected_triage_level": 2,
+      "predicted_triage_level": 1,
+      "expected_confidence_band": "LOW",
+      "predicted_confidence_band": "MEDIUM",
+      "confidence_score": 0.5811,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "safety_flags": [
+        "GERIATRIC_AGE_ADJUSTED",
+        "ZERO_HISTORY",
+        "MISSING_DATA",
+        "AGE_OR_VITAL_SAFETY_RULE"
+      ],
+      "primary_reason": "Incomplete intake data requires conservative clinical review; Geriatric atypical presentation or fall risk requires review",
+      "age_group": "geriatric",
+      "history_availability": "none",
+      "missing_fields": [
+        "history"
+      ],
+      "missing_data_penalty": 0.4,
+      "nlp_ambiguity_penalty": 0.51
+    },
+    {
+      "patient_id": "DEMO-P003",
+      "scenario_tag": "VITALS_OVERRIDE_NLP",
+      "expected_triage_level": 1,
+      "predicted_triage_level": 1,
+      "expected_confidence_band": "MEDIUM",
+      "predicted_confidence_band": "MEDIUM",
+      "confidence_score": 0.6113,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "safety_flags": [
+        "CRITICAL_SAFETY_RULE"
+      ],
+      "primary_reason": "O2 saturation critically low (88%); Severe hemodynamic instability (HR 148 bpm)",
+      "age_group": "adult",
+      "history_availability": "rich",
+      "missing_fields": [],
+      "missing_data_penalty": 0.0,
+      "nlp_ambiguity_penalty": 0.51
+    },
+    {
+      "patient_id": "DEMO-P004",
+      "scenario_tag": "ZERO_HISTORY",
+      "expected_triage_level": 4,
+      "predicted_triage_level": 4,
+      "expected_confidence_band": "LOW",
+      "predicted_confidence_band": "MEDIUM",
+      "confidence_score": 0.6833,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "safety_flags": [
+        "ZERO_HISTORY",
+        "MISSING_DATA"
+      ],
+      "primary_reason": "Incomplete intake data requires conservative clinical review",
+      "age_group": "adult",
+      "history_availability": "none",
+      "missing_fields": [
+        "history"
+      ],
+      "missing_data_penalty": 0.25,
+      "nlp_ambiguity_penalty": 0.51
+    },
+    {
+      "patient_id": "DEMO-P005",
+      "scenario_tag": "RICH_HISTORY",
+      "expected_triage_level": 5,
+      "predicted_triage_level": 5,
+      "expected_confidence_band": "HIGH",
+      "predicted_confidence_band": "HIGH",
+      "confidence_score": 0.8725,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "safety_flags": [],
+      "primary_reason": "",
+      "age_group": "adult",
+      "history_availability": "rich",
+      "missing_fields": [],
+      "missing_data_penalty": 0.0,
+      "nlp_ambiguity_penalty": 0.3
+    },
+    {
+      "patient_id": "DEMO-P006",
+      "scenario_tag": "PARTIAL_HISTORY",
+      "expected_triage_level": 3,
+      "predicted_triage_level": 5,
+      "expected_confidence_band": "MEDIUM",
+      "predicted_confidence_band": "MEDIUM",
+      "confidence_score": 0.7352,
+      "expected_escalation": true,
+      "predicted_escalation": false,
+      "safety_flags": [
+        "PARTIAL_HISTORY"
+      ],
+      "primary_reason": "",
+      "age_group": "adult",
+      "history_availability": "partial",
+      "missing_fields": [],
+      "missing_data_penalty": 0.12,
+      "nlp_ambiguity_penalty": 0.51
+    },
+    {
+      "patient_id": "DEMO-P007",
+      "scenario_tag": "AMBIGUOUS_PRESENTATION",
+      "expected_triage_level": 3,
+      "predicted_triage_level": 5,
+      "expected_confidence_band": "LOW",
+      "predicted_confidence_band": "MEDIUM",
+      "confidence_score": 0.7352,
+      "expected_escalation": true,
+      "predicted_escalation": false,
+      "safety_flags": [
+        "PARTIAL_HISTORY"
+      ],
+      "primary_reason": "",
+      "age_group": "adult",
+      "history_availability": "partial",
+      "missing_fields": [],
+      "missing_data_penalty": 0.12,
+      "nlp_ambiguity_penalty": 0.51
+    },
+    {
+      "patient_id": "DEMO-P008",
+      "scenario_tag": "MISSING_VITAL",
+      "expected_triage_level": 2,
+      "predicted_triage_level": 2,
+      "expected_confidence_band": "LOW",
+      "predicted_confidence_band": "HIGH",
+      "confidence_score": 0.869,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "safety_flags": [
+        "MISSING_DATA",
+        "AGE_OR_VITAL_SAFETY_RULE"
+      ],
+      "primary_reason": "Incomplete intake data requires conservative clinical review; Missing oxygen saturation in respiratory complaint requires clinical review",
+      "age_group": "adult",
+      "history_availability": "rich",
+      "missing_fields": [
+        "oxygen_saturation"
+      ],
+      "missing_data_penalty": 0.2,
+      "nlp_ambiguity_penalty": 0.12
+    },
+    {
+      "patient_id": "DEMO-P009",
+      "scenario_tag": "CONFLICTING_SIGNALS",
+      "expected_triage_level": 1,
+      "predicted_triage_level": 1,
+      "expected_confidence_band": "LOW",
+      "predicted_confidence_band": "MEDIUM",
+      "confidence_score": 0.5805,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "safety_flags": [
+        "CRITICAL_SAFETY_RULE"
+      ],
+      "primary_reason": "O2 saturation critically low (88%); Severe hemodynamic instability (HR 148 bpm)",
+      "age_group": "adult",
+      "history_availability": "rich",
+      "missing_fields": [],
+      "missing_data_penalty": 0.0,
+      "nlp_ambiguity_penalty": 0.51
+    },
+    {
+      "patient_id": "DEMO-P010",
+      "scenario_tag": "HIGH_CONFIDENCE",
+      "expected_triage_level": 1,
+      "predicted_triage_level": 1,
+      "expected_confidence_band": "HIGH",
+      "predicted_confidence_band": "HIGH",
+      "confidence_score": 0.8258,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "safety_flags": [
+        "CRITICAL_SAFETY_RULE"
+      ],
+      "primary_reason": "NLP critical finding(s): chest pain, crushing, radiating",
+      "age_group": "adult",
+      "history_availability": "rich",
+      "missing_fields": [],
+      "missing_data_penalty": 0.0,
+      "nlp_ambiguity_penalty": 0.03
+    },
+    {
+      "patient_id": "DEMO-P011",
+      "scenario_tag": "LOW_CONFIDENCE",
+      "expected_triage_level": 2,
+      "predicted_triage_level": 2,
+      "expected_confidence_band": "LOW",
+      "predicted_confidence_band": "MEDIUM",
+      "confidence_score": 0.6233,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "safety_flags": [
+        "GERIATRIC_AGE_ADJUSTED",
+        "ZERO_HISTORY",
+        "MISSING_DATA",
+        "AGE_OR_VITAL_SAFETY_RULE"
+      ],
+      "primary_reason": "Incomplete intake data requires conservative clinical review; Geriatric atypical presentation or fall risk requires review; NLP high-risk finding: weakness",
+      "age_group": "geriatric",
+      "history_availability": "none",
+      "missing_fields": [
+        "history"
+      ],
+      "missing_data_penalty": 0.4,
+      "nlp_ambiguity_penalty": 0.51
+    },
+    {
+      "patient_id": "DEMO-P012",
+      "scenario_tag": "STABLE_LOW_RISK",
+      "expected_triage_level": 4,
+      "predicted_triage_level": 5,
+      "expected_confidence_band": "HIGH",
+      "predicted_confidence_band": "HIGH",
+      "confidence_score": 0.8725,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "safety_flags": [],
+      "primary_reason": "",
+      "age_group": "adult",
+      "history_availability": "rich",
+      "missing_fields": [],
+      "missing_data_penalty": 0.0,
+      "nlp_ambiguity_penalty": 0.3
+    },
+    {
+      "patient_id": "DEMO-P013",
+      "scenario_tag": "CLINICIAN_ACCEPT",
+      "expected_triage_level": 5,
+      "predicted_triage_level": 5,
+      "expected_confidence_band": "HIGH",
+      "predicted_confidence_band": "HIGH",
+      "confidence_score": 0.8725,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "safety_flags": [],
+      "primary_reason": "",
+      "age_group": "adult",
+      "history_availability": "rich",
+      "missing_fields": [],
+      "missing_data_penalty": 0.0,
+      "nlp_ambiguity_penalty": 0.3
+    },
+    {
+      "patient_id": "DEMO-P014",
+      "scenario_tag": "CLINICIAN_OVERRIDE",
+      "expected_triage_level": 3,
+      "predicted_triage_level": 5,
+      "expected_confidence_band": "MEDIUM",
+      "predicted_confidence_band": "MEDIUM",
+      "confidence_score": 0.7833,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "safety_flags": [],
+      "primary_reason": "",
+      "age_group": "adult",
+      "history_availability": "rich",
+      "missing_fields": [],
+      "missing_data_penalty": 0.0,
+      "nlp_ambiguity_penalty": 0.51
+    },
+    {
+      "patient_id": "DEMO-P015",
+      "scenario_tag": "PEDIATRIC_MISSING_DATA",
+      "expected_triage_level": 4,
+      "predicted_triage_level": 2,
+      "expected_confidence_band": "MEDIUM",
+      "predicted_confidence_band": "MEDIUM",
+      "confidence_score": 0.5545,
+      "expected_escalation": false,
+      "predicted_escalation": true,
+      "safety_flags": [
+        "PEDIATRIC_AGE_ADJUSTED",
+        "PARTIAL_HISTORY"
+      ],
+      "primary_reason": "",
+      "age_group": "pediatric",
+      "history_availability": "partial",
+      "missing_fields": [],
+      "missing_data_penalty": 0.12,
+      "nlp_ambiguity_penalty": 0.3
+    },
+    {
+      "patient_id": "DEMO-P016",
+      "scenario_tag": "GERIATRIC_RICH_HISTORY",
+      "expected_triage_level": 2,
+      "predicted_triage_level": 1,
+      "expected_confidence_band": "MEDIUM",
+      "predicted_confidence_band": "MEDIUM",
+      "confidence_score": 0.6602,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "safety_flags": [
+        "GERIATRIC_AGE_ADJUSTED",
+        "CRITICAL_SAFETY_RULE"
+      ],
+      "primary_reason": "Multiple concurrent urgent findings (3): Geriatric heart-rate abnormality (110 bpm); Geriatric atypical presentation or fall risk requires review; NLP high-risk finding: dark stools",
+      "age_group": "geriatric",
+      "history_availability": "rich",
+      "missing_fields": [],
+      "missing_data_penalty": 0.0,
+      "nlp_ambiguity_penalty": 0.12
+    },
+    {
+      "patient_id": "DEMO-P017",
+      "scenario_tag": "STABLE_LOW_RISK",
+      "expected_triage_level": 5,
+      "predicted_triage_level": 5,
+      "expected_confidence_band": "HIGH",
+      "predicted_confidence_band": "HIGH",
+      "confidence_score": 0.949,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "safety_flags": [],
+      "primary_reason": "",
+      "age_group": "adult",
+      "history_availability": "rich",
+      "missing_fields": [],
+      "missing_data_penalty": 0.0,
+      "nlp_ambiguity_penalty": 0.12
+    },
+    {
+      "patient_id": "DEMO-P018",
+      "scenario_tag": "PEDIATRIC_MISSING_DATA",
+      "expected_triage_level": 2,
+      "predicted_triage_level": 1,
+      "expected_confidence_band": "LOW",
+      "predicted_confidence_band": "LOW",
+      "confidence_score": 0.5119,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "safety_flags": [
+        "PEDIATRIC_AGE_ADJUSTED",
+        "PARTIAL_HISTORY",
+        "MISSING_DATA",
+        "CRITICAL_SAFETY_RULE"
+      ],
+      "primary_reason": "Incomplete intake data requires conservative clinical review; Multiple concurrent urgent findings (3): O2 saturation low (91%); Respiratory rate abnormal (30/min); Pediatric respiratory rate elevated (30/min)",
+      "age_group": "pediatric",
+      "history_availability": "partial",
+      "missing_fields": [
+        "temperature"
+      ],
+      "missing_data_penalty": 0.42,
+      "nlp_ambiguity_penalty": 0.12
+    },
+    {
+      "patient_id": "DEMO-P019",
+      "scenario_tag": "MULTI_FACTOR_RISK",
+      "expected_triage_level": 1,
+      "predicted_triage_level": 1,
+      "expected_confidence_band": "MEDIUM",
+      "predicted_confidence_band": "MEDIUM",
+      "confidence_score": 0.6723,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "safety_flags": [
+        "ZERO_HISTORY",
+        "MISSING_DATA",
+        "CRITICAL_SAFETY_RULE"
+      ],
+      "primary_reason": "Incomplete intake data requires conservative clinical review; Multiple concurrent urgent findings (4): O2 saturation low (90%); Heart rate abnormal (132 bpm); Respiratory rate abnormal (30/min); NLP high-risk finding: chest pain",
+      "age_group": "adult",
+      "history_availability": "none",
+      "missing_fields": [
+        "history"
+      ],
+      "missing_data_penalty": 0.25,
+      "nlp_ambiguity_penalty": 0.51
+    },
+    {
+      "patient_id": "DEMO-P020",
+      "scenario_tag": "WAIT_THRESHOLD",
+      "expected_triage_level": 3,
+      "predicted_triage_level": 5,
+      "expected_confidence_band": "MEDIUM",
+      "predicted_confidence_band": "MEDIUM",
+      "confidence_score": 0.7621,
+      "expected_escalation": true,
+      "predicted_escalation": false,
+      "safety_flags": [],
+      "primary_reason": "",
+      "age_group": "adult",
+      "history_availability": "rich",
+      "missing_fields": [],
+      "missing_data_penalty": 0.0,
+      "nlp_ambiguity_penalty": 0.12
+    },
+    {
+      "patient_id": "DEMO-P021",
+      "scenario_tag": "VITAL_DETERIORATION",
+      "expected_triage_level": 3,
+      "predicted_triage_level": 5,
+      "expected_confidence_band": "HIGH",
+      "predicted_confidence_band": "HIGH",
+      "confidence_score": 0.949,
+      "expected_escalation": false,
+      "predicted_escalation": false,
+      "safety_flags": [],
+      "primary_reason": "",
+      "age_group": "adult",
+      "history_availability": "rich",
+      "missing_fields": [],
+      "missing_data_penalty": 0.0,
+      "nlp_ambiguity_penalty": 0.12
+    },
+    {
+      "patient_id": "DEMO-P022",
+      "scenario_tag": "CRITICAL_SAFETY_RULE",
+      "expected_triage_level": 1,
+      "predicted_triage_level": 1,
+      "expected_confidence_band": "LOW",
+      "predicted_confidence_band": "HIGH",
+      "confidence_score": 0.8372,
+      "expected_escalation": true,
+      "predicted_escalation": true,
+      "safety_flags": [
+        "PEDIATRIC_AGE_ADJUSTED",
+        "PARTIAL_HISTORY",
+        "CRITICAL_SAFETY_RULE"
+      ],
+      "primary_reason": "Multiple concurrent urgent findings (5): O2 saturation low (89%); Heart rate abnormal (135 bpm); Respiratory rate abnormal (32/min); Pediatric fever (39.8C); Pediatric respiratory rate elevated (32/min)",
+      "age_group": "pediatric",
+      "history_availability": "partial",
+      "missing_fields": [],
+      "missing_data_penalty": 0.12,
+      "nlp_ambiguity_penalty": 0.12
+    }
+  ],
+  "synthetic_data_notice": "All dataset records are synthetic. Expected outputs represent simulated prototype safety scenarios, not medically validated ground truth."
+}
