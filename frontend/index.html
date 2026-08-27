@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="PatientTriage.ai — AI-powered emergency department triage decision-support system. Helps hospital staff prioritize and route patients using explainable AI while keeping the human in the loop."
+    />
+    <title>PatientTriage.ai — ED Triage Decision Support</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%2300D9C0'/%3E%3Cpath d='M80 50H65L55 80L40 20L30 50H20' stroke='%230A0E14' stroke-width='7' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <!-- Ambient background layers (decorative only) -->
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow-1" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow-2" aria-hidden="true"></div>
+
+    <div id="app-root">
+      <!-- ═══════════════════════════════════════════════════
+         OFFLINE BANNER
+         ═══════════════════════════════════════════════════ -->
+      <div id="offline-banner" role="alert" aria-live="assertive">
+        <span class="banner-icon">⚠️</span>
+        <span
+          >OFFLINE MODE: AI assessment unavailable. Proceed with manual
+          triage.</span
+        >
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════
+         TOP BAR — system identity + live status
+         ═══════════════════════════════════════════════════ -->
+      <header id="topbar">
+        <div class="topbar-brand">
+          <div class="brand-logo">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+          </div>
+          <div class="topbar-brand-text">
+            <h1>PatientTriage<span class="brand-dot">.ai</span></h1>
+            <span class="topbar-subtitle"
+              >Emergency Department · Decision Support</span
+            >
+          </div>
+        </div>
+
+        <div class="topbar-ekg" aria-hidden="true">
+          <svg viewBox="0 0 400 40" preserveAspectRatio="none">
+            <polyline
+              class="ekg-line"
+              points="0,20 40,20 55,20 62,6 70,34 78,20 95,20 130,20 145,20 152,10 160,30 168,20 185,20 220,20 235,20 242,4 250,36 258,20 275,20 310,20 325,20 332,8 340,32 348,20 400,20"
+            />
+          </svg>
+        </div>
+
+        <div class="topbar-status">
+          <span class="status-chip demo-mode-chip" style="background: rgba(0, 217, 192, 0.12); border: 1px solid rgba(0, 217, 192, 0.4); color: #00D9C0; font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 9999px; letter-spacing: 0.05em; text-transform: uppercase;">
+            🧪 Synthetic Demo Data
+          </span>
+          <span class="status-chip">
+            <span class="status-dot"></span>
+            <span id="refresh-status">Live Monitoring</span>
+          </span>
+        </div>
+      </header>
+
+      <!-- ═══════════════════════════════════════════════════
+         PANEL 1: Left Sidebar — Active Triage Queue
+         ═══════════════════════════════════════════════════ -->
+      <aside id="sidebar" aria-label="Triage Queue">
+        <header class="sidebar-header">
+          <p class="queue-title">Incoming Queue</p>
+          <p class="queue-subtitle">
+            Decision support only · clinician retains final authority
+          </p>
+
+          <div class="queue-meta">
+            <span id="queue-count" class="queue-count">
+              <strong>0</strong> patients awaiting review
+            </span>
+            <div class="toggle-group">
+              <button id="toggle-all" class="toggle-btn active" type="button">
+                All
+              </button>
+              <button id="toggle-unreviewed" class="toggle-btn" type="button">
+                Unreviewed
+              </button>
+            </div>
+          </div>
+
+          <!-- Priority Summary -->
+          <div
+            id="priority-summary"
+            class="priority-summary"
+            aria-label="Patient count by priority"
+          ></div>
+
+          <!-- Add Patient Button -->
+          <button id="btn-add-patient" class="btn-add-patient" type="button">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Register New Patient
+          </button>
+
+          <!-- Surge Simulation Button -->
+          <button id="btn-surge" class="btn-surge" type="button">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+            </svg>
+            Simulate Surge (3× Volume)
+          </button>
+
+          <!-- Audit Log Button -->
+          <button id="btn-audit-log" class="btn-audit-log" type="button">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+            View Audit Log
+          </button>
+
+          <!-- Action Row: Clear Queue & Reload Demo -->
+          <div class="sidebar-secondary-actions">
+            <button
+              id="btn-clear-queue"
+              class="btn-secondary-action"
+              type="button"
+              title="Clear all patients and start fresh with empty database"
+            >
+              🗑 Clear Queue
+            </button>
+            <button
+              id="btn-reload-demo"
+              class="btn-secondary-action"
+              type="button"
+              title="Seed 20 demo patients from patients.json"
+            >
+              🔄 Load Demo Data
+            </button>
+          </div>
+        </header>
+
+        <div
+          id="patient-list"
+          class="patient-list"
+          role="list"
+          aria-label="Patient list"
+        ></div>
+      </aside>
+
+      <!-- ═══════════════════════════════════════════════════
+         PANEL 2: Right Main Panel
+         ═══════════════════════════════════════════════════ -->
+      <main id="main-panel">
+        <!-- Loading State -->
+        <div id="loading-state" class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Running AI Triage Pipeline...</p>
+          <span class="loading-sub"
+            >PHI Scrub → Vitals Scoring → NLP Analysis → Safety Check →
+            Confidence</span
+          >
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-state">
+          <div class="empty-icon-container">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"
+              />
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+              <path d="M12 11v6" />
+              <path d="M9 14h6" />
+            </svg>
+          </div>
+          <h2>Select a Patient to Review</h2>
+          <p>
+            Choose a patient from the queue to view their AI-assisted triage
+            assessment and clinical details.
+          </p>
+          <div class="keyboard-hints">
+            <span><kbd>↑</kbd> <kbd>↓</kbd> Navigate</span>
+            <span><kbd>Enter</kbd> Confirm</span>
+            <span><kbd>Esc</kbd> Deselect</span>
+          </div>
+        </div>
+
+        <!-- Detail View -->
+        <div id="detail-view" class="detail-view">
+          <!-- Overdue Banner (shown when ESI 3 patient waits >60 min) -->
+          <div id="overdue-banner" class="overdue-banner" role="alert">
+            <span class="overdue-icon">⏰</span>
+            <span
+              ><strong>OVERDUE:</strong> Patient has exceeded maximum safe wait
+              time. Auto-escalated from P3 → P2.</span
+            >
+          </div>
+
+          <!-- Section 2A: Demographics & Vitals -->
+          <section class="patient-header" aria-label="Patient information">
+            <div class="patient-header-top">
+              <div class="patient-identity">
+                <span id="patient-id-large" class="patient-id-large"
+                  >PT-0000</span
+                >
+                <div id="demo-pills" class="demo-pills"></div>
+              </div>
+              <div id="arrival-info" class="arrival-info"></div>
+            </div>
+            <div
+              id="vitals-grid"
+              class="vitals-grid"
+              aria-label="Patient vitals"
+            ></div>
+          </section>
+
+          <!-- Section 2B: Explainability -->
+          <section
+            class="explainability-section"
+            aria-label="AI explainability"
+          >
+            <div class="explain-column">
+              <div class="section-title">
+                <span class="title-dot"></span>
+                Chief Complaint &amp; NLP Analysis
+              </div>
+              <div class="complaint-box">
+                <p id="complaint-text" class="complaint-text"></p>
+              </div>
+            </div>
+            <div class="explain-column">
+              <div class="section-title">
+                <span
+                  class="title-dot"
+                  style="background: var(--p2-orange)"
+                ></span>
+                AI Priority Assessment
+              </div>
+              <div class="ai-assessment-card">
+                <div class="ai-priority-header">
+                  <span id="ai-priority-level" class="ai-priority-level"
+                    >P1</span
+                  >
+                  <div>
+                    <div id="ai-priority-label" class="ai-priority-label">
+                      Resuscitation
+                    </div>
+                    <div class="confidence-bar-container">
+                      <div class="confidence-label">
+                        <span>Confidence</span>
+                        <span id="confidence-percent">94%</span>
+                      </div>
+                      <div class="confidence-bar">
+                        <div
+                          id="confidence-fill"
+                          class="confidence-fill"
+                          style="width: 94%"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <ul
+                  id="factor-list"
+                  class="factor-list"
+                  aria-label="AI reasoning factors"
+                ></ul>
+
+                <div
+                  id="safety-summary"
+                  class="safety-summary"
+                  role="status"
+                  aria-live="polite"
+                ></div>
+
+                <!-- Pipeline Trace Expander -->
+                <details id="trace-expander" class="trace-expander">
+                  <summary>View AI Pipeline Trace</summary>
+                  <div id="trace-content" class="trace-content"></div>
+                </details>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section 2C: Action Footer -->
+          <footer class="action-footer" aria-label="Triage actions">
+            <div id="footer-main" class="action-footer-main">
+              <button id="btn-accept" class="btn btn-accept" type="button">
+                Confirm AI Assessment
+              </button>
+              <button id="btn-override" class="btn btn-override" type="button">
+                Override Priority
+              </button>
+              <button
+                id="btn-reassessment"
+                class="btn btn-override"
+                type="button"
+              >
+                Request Reassessment
+              </button>
+              <button id="btn-acknowledge" class="btn btn-accept" type="button">
+                Acknowledge Alert
+              </button>
+              <div class="keyboard-hint">
+                <span><kbd>Enter</kbd> Confirm</span>
+                <span><kbd>Esc</kbd> Deselect</span>
+                <span><kbd>↑↓</kbd> Navigate</span>
+              </div>
+            </div>
+
+            <div id="override-panel" class="override-panel">
+              <div class="override-title">
+                Override AI Recommendation — Clinician Review Required
+              </div>
+              <div id="override-context" class="override-context"></div>
+              <label for="override-reason-code"
+                >Reason for clinician override</label
+              >
+              <select id="override-reason-code" class="override-reason-select">
+                <option value="">Select a reason</option>
+                <option value="PATIENT_APPEARS_WORSE">
+                  Patient appears clinically worse than model suggests
+                </option>
+                <option value="PATIENT_APPEARS_STABLE">
+                  Patient appears clinically more stable than model suggests
+                </option>
+                <option value="NEW_INFORMATION">
+                  New information unavailable to AI
+                </option>
+                <option value="NEW_SYMPTOMS">New symptoms observed</option>
+                <option value="VITALS_REINTERPRETED">
+                  Vital signs manually reinterpreted
+                </option>
+                <option value="HISTORY_NOT_CAPTURED">
+                  History/context not captured by system
+                </option>
+                <option value="OTHER">Other</option>
+              </select>
+              <div class="priority-radio-group">
+                <input
+                  class="priority-radio"
+                  type="radio"
+                  name="override-priority"
+                  id="op-1"
+                  value="1"
+                />
+                <label for="op-1" class="priority-radio-label p1">P1</label>
+                <input
+                  class="priority-radio"
+                  type="radio"
+                  name="override-priority"
+                  id="op-2"
+                  value="2"
+                />
+                <label for="op-2" class="priority-radio-label p2">P2</label>
+                <input
+                  class="priority-radio"
+                  type="radio"
+                  name="override-priority"
+                  id="op-3"
+                  value="3"
+                />
+                <label for="op-3" class="priority-radio-label p3">P3</label>
+                <input
+                  class="priority-radio"
+                  type="radio"
+                  name="override-priority"
+                  id="op-4"
+                  value="4"
+                />
+                <label for="op-4" class="priority-radio-label p4">P4</label>
+                <input
+                  class="priority-radio"
+                  type="radio"
+                  name="override-priority"
+                  id="op-5"
+                  value="5"
+                />
+                <label for="op-5" class="priority-radio-label p5">P5</label>
+              </div>
+              <div class="override-reason-row">
+                <label for="override-reason"
+                  >Clinician explanation (required):</label
+                >
+                <select id="override-reason" class="override-reason-select">
+                  <option value="">— Select reason —</option>
+                  <option value="stable">Patient appearance stable</option>
+                  <option value="artifact">
+                    Vitals artifact / sensor error
+                  </option>
+                  <option value="chronic">Known chronic condition</option>
+                  <option value="protocol">
+                    Protocol requires lower acuity
+                  </option>
+                  <option value="clinical">Clinical judgment differs</option>
+                  <option value="other">Other (documented in chart)</option>
+                </select>
+              </div>
+              <textarea
+                id="override-clinician-reason"
+                class="override-clinician-reason"
+                maxlength="500"
+                rows="3"
+                placeholder="Briefly document the clinical context for this decision"
+              ></textarea>
+              <div class="override-actions">
+                <button
+                  id="btn-confirm-override"
+                  class="btn btn-confirm-override"
+                  type="button"
+                  disabled
+                >
+                  Confirm Override
+                </button>
+                <button
+                  id="btn-cancel-override"
+                  class="btn btn-cancel"
+                  type="button"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </footer>
+        </div>
+      </main>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+       Add Patient Modal
+       ═══════════════════════════════════════════════════ -->
+    <div id="modal-overlay" class="modal-overlay">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
+        <div class="modal-header">
+          <h2 id="modal-title">Register New Patient</h2>
+          <button
+            id="modal-close"
+            class="modal-close"
+            type="button"
+            aria-label="Close"
+          >
+            &times;
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Demographics -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="form-age">Age</label>
+              <input
+                type="number"
+                id="form-age"
+                placeholder="e.g. 45"
+                min="0"
+                max="120"
+              />
+            </div>
+            <div class="form-group">
+              <label for="form-sex">Biological Sex</label>
+              <select id="form-sex">
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="Other">Other</option>
+                <option value="Unknown">Unknown</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Chief Complaint -->
+          <div class="form-row full">
+            <div class="form-group">
+              <label for="form-complaint">Chief Complaint</label>
+              <textarea
+                id="form-complaint"
+                rows="3"
+                placeholder="Describe the patient's primary complaint..."
+              ></textarea>
+            </div>
+          </div>
+
+          <p class="form-section-title">
+            Vitals (optional — enter if available)
+          </p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="form-hr">Heart Rate (bpm)</label>
+              <input type="number" id="form-hr" placeholder="e.g. 80" />
+            </div>
+            <div class="form-group">
+              <label for="form-bp-sys">Blood Pressure (sys/dia)</label>
+              <div style="display: flex; gap: 6px">
+                <input
+                  type="number"
+                  id="form-bp-sys"
+                  placeholder="Sys"
+                  style="flex: 1"
+                />
+                <input
+                  type="number"
+                  id="form-bp-dia"
+                  placeholder="Dia"
+                  style="flex: 1"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="form-spo2">SpO₂ (%)</label>
+              <input type="number" id="form-spo2" placeholder="e.g. 98" />
+            </div>
+            <div class="form-group">
+              <label for="form-rr">Respiratory Rate (/min)</label>
+              <input type="number" id="form-rr" placeholder="e.g. 16" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="form-temp">Temperature (°C)</label>
+              <input
+                type="number"
+                id="form-temp"
+                step="0.1"
+                placeholder="e.g. 37.0"
+              />
+            </div>
+            <div class="form-group">
+              <label for="form-gcs">GCS Score (3-15)</label>
+              <input
+                type="number"
+                id="form-gcs"
+                placeholder="e.g. 15"
+                min="3"
+                max="15"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            id="btn-modal-cancel"
+            class="btn btn-modal-cancel"
+            type="button"
+          >
+            Cancel
+          </button>
+          <button id="btn-modal-submit" class="btn btn-submit" type="button">
+            Add to Queue
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+       Audit Log Modal
+       ═══════════════════════════════════════════════════ -->
+    <div id="audit-modal-overlay" class="modal-overlay">
+      <div
+        class="modal audit-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="audit-modal-title"
+      >
+        <div class="modal-header">
+          <h2 id="audit-modal-title">Audit Log — Decision Trail</h2>
+          <button
+            id="audit-modal-close"
+            class="modal-close"
+            type="button"
+            aria-label="Close"
+          >
+            &times;
+          </button>
+        </div>
+        <div class="audit-stats" id="audit-stats"></div>
+        <div class="modal-body audit-log-body">
+          <table class="audit-table" id="audit-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Patient</th>
+                <th>Age/Sex</th>
+                <th>AI ESI</th>
+                <th>Confidence</th>
+                <th>Action</th>
+                <th>Nurse ESI</th>
+                <th>Event / Reason</th>
+              </tr>
+            </thead>
+            <tbody id="audit-table-body"></tbody>
+          </table>
+          <p id="audit-empty" class="audit-empty">No decisions recorded yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

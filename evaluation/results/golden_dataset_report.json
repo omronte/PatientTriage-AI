@@ -1,0 +1,341 @@
+{
+  "metrics": {
+    "dataset_size": 22,
+    "triage_agreement_count": 12,
+    "triage_agreement_rate": 0.5455,
+    "under_triage_count": 6,
+    "under_triage_rate": 0.2727,
+    "over_triage_count": 4,
+    "over_triage_rate": 0.1818,
+    "safety_rule_trigger_rate": 0.6818,
+    "low_confidence_case_rate": 0.0455,
+    "conservative_escalation_rate": 0.5909,
+    "missing_data_detection_rate": 0.2727,
+    "pediatric_routing_correct": true,
+    "geriatric_routing_correct": true,
+    "zero_history_handling_correct": true,
+    "confidence_distribution": {
+      "HIGH": 9,
+      "MEDIUM": 12,
+      "LOW": 1
+    },
+    "scenario_coverage_count": 20,
+    "data_leakage_violations": [],
+    "data_leakage_clean": true
+  },
+  "safety_critical": {
+    "critical_under_triage_count": 0,
+    "critical_rule_miss_count": 0,
+    "pediatric_safety_miss_count": 0,
+    "geriatric_safety_miss_count": 0,
+    "missing_data_safety_miss_count": 0,
+    "zero_history_safety_miss_count": 0,
+    "vital_deterioration_miss_count": 1,
+    "low_confidence_escalation_miss_count": 0,
+    "critical_miss_patient_ids": [],
+    "critical_rule_miss_patient_ids": []
+  },
+  "confusion_matrix": {
+    "1": {
+      "1": 6,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0
+    },
+    "2": {
+      "1": 3,
+      "2": 2,
+      "3": 0,
+      "4": 0,
+      "5": 0
+    },
+    "3": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 5
+    },
+    "4": {
+      "1": 0,
+      "2": 1,
+      "3": 0,
+      "4": 1,
+      "5": 1
+    },
+    "5": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 3
+    }
+  },
+  "scenario_breakdown": {
+    "PEDIATRIC_AGE_ADJUSTMENT": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        1
+      ],
+      "predicted_esi": [
+        1
+      ]
+    },
+    "GERIATRIC_AMBIGUOUS_ZERO_HISTORY": {
+      "count": 1,
+      "agreement": 0,
+      "under_triage": 0,
+      "over_triage": 1,
+      "safety_triggered": 1,
+      "expected_esi": [
+        2
+      ],
+      "predicted_esi": [
+        1
+      ]
+    },
+    "VITALS_OVERRIDE_NLP": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        1
+      ],
+      "predicted_esi": [
+        1
+      ]
+    },
+    "ZERO_HISTORY": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        4
+      ],
+      "predicted_esi": [
+        4
+      ]
+    },
+    "RICH_HISTORY": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 0,
+      "expected_esi": [
+        5
+      ],
+      "predicted_esi": [
+        5
+      ]
+    },
+    "PARTIAL_HISTORY": {
+      "count": 1,
+      "agreement": 0,
+      "under_triage": 1,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        3
+      ],
+      "predicted_esi": [
+        5
+      ]
+    },
+    "AMBIGUOUS_PRESENTATION": {
+      "count": 1,
+      "agreement": 0,
+      "under_triage": 1,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        3
+      ],
+      "predicted_esi": [
+        5
+      ]
+    },
+    "MISSING_VITAL": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        2
+      ],
+      "predicted_esi": [
+        2
+      ]
+    },
+    "CONFLICTING_SIGNALS": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        1
+      ],
+      "predicted_esi": [
+        1
+      ]
+    },
+    "HIGH_CONFIDENCE": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        1
+      ],
+      "predicted_esi": [
+        1
+      ]
+    },
+    "LOW_CONFIDENCE": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        2
+      ],
+      "predicted_esi": [
+        2
+      ]
+    },
+    "STABLE_LOW_RISK": {
+      "count": 2,
+      "agreement": 1,
+      "under_triage": 1,
+      "over_triage": 0,
+      "safety_triggered": 0,
+      "expected_esi": [
+        4,
+        5
+      ],
+      "predicted_esi": [
+        5,
+        5
+      ]
+    },
+    "CLINICIAN_ACCEPT": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 0,
+      "expected_esi": [
+        5
+      ],
+      "predicted_esi": [
+        5
+      ]
+    },
+    "CLINICIAN_OVERRIDE": {
+      "count": 1,
+      "agreement": 0,
+      "under_triage": 1,
+      "over_triage": 0,
+      "safety_triggered": 0,
+      "expected_esi": [
+        3
+      ],
+      "predicted_esi": [
+        5
+      ]
+    },
+    "PEDIATRIC_MISSING_DATA": {
+      "count": 2,
+      "agreement": 0,
+      "under_triage": 0,
+      "over_triage": 2,
+      "safety_triggered": 2,
+      "expected_esi": [
+        4,
+        2
+      ],
+      "predicted_esi": [
+        2,
+        1
+      ]
+    },
+    "GERIATRIC_RICH_HISTORY": {
+      "count": 1,
+      "agreement": 0,
+      "under_triage": 0,
+      "over_triage": 1,
+      "safety_triggered": 1,
+      "expected_esi": [
+        2
+      ],
+      "predicted_esi": [
+        1
+      ]
+    },
+    "MULTI_FACTOR_RISK": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        1
+      ],
+      "predicted_esi": [
+        1
+      ]
+    },
+    "WAIT_THRESHOLD": {
+      "count": 1,
+      "agreement": 0,
+      "under_triage": 1,
+      "over_triage": 0,
+      "safety_triggered": 0,
+      "expected_esi": [
+        3
+      ],
+      "predicted_esi": [
+        5
+      ]
+    },
+    "VITAL_DETERIORATION": {
+      "count": 1,
+      "agreement": 0,
+      "under_triage": 1,
+      "over_triage": 0,
+      "safety_triggered": 0,
+      "expected_esi": [
+        3
+      ],
+      "predicted_esi": [
+        5
+      ]
+    },
+    "CRITICAL_SAFETY_RULE": {
+      "count": 1,
+      "agreement": 1,
+      "under_triage": 0,
+      "over_triage": 0,
+      "safety_triggered": 1,
+      "expected_esi": [
+        1
+      ],
+      "predicted_esi": [
+        1
+      ]
+    }
+  }
+}
