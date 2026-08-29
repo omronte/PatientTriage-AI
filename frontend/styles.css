@@ -577,15 +577,16 @@ textarea:focus-visible,
 
 /* Status badge */
 .status-badge {
-  position: absolute;
-  top: 8px;
-  right: 10px;
   font-size: 9px;
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 3px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 .status-badge.accepted { background: rgba(51, 214, 135, 0.13); color: var(--accent-confirm); }
 .status-badge.overridden { background: rgba(255, 159, 64, 0.13); color: var(--p2-orange); }
@@ -1589,9 +1590,6 @@ mark.warning-flag {
 
 /* Overdue badge on patient cards */
 .overdue-badge {
-  position: absolute;
-  top: 8px;
-  right: 10px;
   font-size: 9px;
   font-weight: 700;
   padding: 2px 6px;
@@ -1600,6 +1598,10 @@ mark.warning-flag {
   letter-spacing: 0.5px;
   background: rgba(229, 48, 63, 0.12);
   color: var(--p1-red);
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
   animation: overdueBlink 1.5s ease-in-out infinite;
 }
 @keyframes overdueBlink {

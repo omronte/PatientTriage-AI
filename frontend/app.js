@@ -101,8 +101,7 @@ function cacheDOMReferences() {
   DOM.formRR = document.getElementById('form-rr');
   DOM.formTemp = document.getElementById('form-temp');
   DOM.formGCS = document.getElementById('form-gcs');
-  // Surge & Audit
-  DOM.btnSurge = document.getElementById('btn-surge');
+  // Audit
   DOM.btnAuditLog = document.getElementById('btn-audit-log');
   DOM.auditModalOverlay = document.getElementById('audit-modal-overlay');
   DOM.auditModalClose = document.getElementById('audit-modal-close');
@@ -304,10 +303,9 @@ function createPatientCard(patient) {
   card.innerHTML = `
     <div class="priority-bar ${pClass}"></div>
     <div class="card-content">
-      ${statusBadgeHTML}
       <div class="card-top-row">
         <span class="patient-id">${patient.patientId}</span>
-        <span class="wait-time">⏱ ${formatWaitTime(waitMins)} / ${patient.waitThresholdMinutes ?? '--'}m safe</span>
+        ${statusBadgeHTML}
       </div>
       <div class="card-mid-row">
         <span class="age-sex">${patient.age} ${patient.biologicalSex === 'M' ? 'Male' : patient.biologicalSex === 'F' ? 'Female' : patient.biologicalSex}</span>
@@ -709,39 +707,10 @@ async function submitNewPatient() {
   }
 }
 
-// ---- Surge Simulation ----
-
-async function simulateSurge() {
-  DOM.btnSurge.disabled = true;
-  DOM.btnSurge.textContent = '⚡ Generating Surge...';
-
-  try {
-    const result = await apiPost('/api/surge');
-
-    if (result.patients && result.patients.length > 0) {
-      result.patients.forEach((p) => appState.patients.push(p));
-      renderQueue();
-      showToast(`SURGE: ${result.injected_count} patients injected (Total: ${result.total_queue_size})`, 'info');
-    }
-  } catch (err) {
-    console.error('Surge simulation failed:', err);
-    showToast('Surge failed — is the backend running?', 'info');
-  } finally {
-    DOM.btnSurge.disabled = false;
-    DOM.btnSurge.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-      </svg>
-      Simulate Surge (3× Volume)
-    `;
-  }
-}
 
 // ---- Clear Queue & Reload Demo Data ----
 
 async function clearQueue() {
-  if (!confirm('Clear all patients from queue and start fresh with an empty database?')) return;
-
   try {
     showLoading();
     await apiPost('/api/reset');
@@ -750,7 +719,7 @@ async function clearQueue() {
     hideLoading();
     renderQueue();
     renderDetailView();
-    showToast('Queue cleared! Database is empty. Ready for new patients.', 'success');
+    showToast('Patient queue cleared successfully', 'success');
   } catch (err) {
     console.error('Clear queue failed:', err);
     hideLoading();
@@ -970,10 +939,6 @@ async function init() {
     if (e.target === DOM.modalOverlay) closeAddPatientModal();
   });
 
-  // Surge button
-  if (DOM.btnSurge) {
-    DOM.btnSurge.addEventListener('click', simulateSurge);
-  }
 
   // Clear & Reload Demo buttons
   if (DOM.btnClearQueue) {

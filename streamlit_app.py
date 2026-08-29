@@ -33,7 +33,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-st.info("🔬 **SYNTHETIC DEMO DATASET** — All patient profiles and simulated triage outcomes are purely synthetic scenarios for prototype safety evaluation. No real patient data is used.")
 
 # ---------------------------------------------------------------------------
 # Initialization & Caching
@@ -135,49 +134,7 @@ with st.sidebar:
     st.caption("Emergency Department · Decision Support")
     st.divider()
 
-    st.subheader("⚡ Surge & Queue Controls")
-    if st.button("🚨 Simulate Surge (3x Volume)", use_container_width=True):
-        surge_batch = generate_surge_patients(count=15, start_id=st.session_state.surge_counter)
-        st.session_state.surge_counter += 15
-        for raw in surge_batch:
-            res = build_and_run_pipeline(
-                patient=raw,
-                model=model,
-                phi_scrubber=scrub_phi,
-                predictor=predict_triage,
-                nlp_extractor=extract_nlp,
-            )
-            st.session_state.patients.append({
-                "id": raw.get("id"),
-                "name": raw.get("name"),
-                "age": raw.get("age"),
-                "gender": raw.get("gender"),
-                "chief_complaint": raw.get("chief_complaint"),
-                "vitals": {
-                    "heart_rate": raw.get("heart_rate"),
-                    "blood_pressure": raw.get("blood_pressure"),
-                    "oxygen_saturation": raw.get("oxygen_saturation"),
-                    "respiratory_rate": raw.get("respiratory_rate"),
-                    "temperature": raw.get("temperature"),
-                    "gcs_score": raw.get("gcs_score", 15),
-                },
-                "ai_esi": res.get("final_esi", 3),
-                "ai_confidence": res.get("final_confidence", 0.5),
-                "confidence_label": res.get("confidence_label", "Unclassified"),
-                "age_group": res.get("age_group", "unknown"),
-                "history_availability": res.get("history_availability", "unavailable"),
-                "missing_fields": res.get("missing_fields", []),
-                "safety_flags": res.get("safety_flags", []),
-                "safety_escalated": res.get("safety_escalated", False),
-                "explainability": res.get("explainability", []),
-                "trace": res.get("trace", []),
-                "arrival_time": datetime.now() - timedelta(minutes=raw.get("wait_time_minutes", 0)),
-                "status": "AWAITING_REVIEW",
-                "nurse_esi": None,
-                "override_reason": None,
-            })
-        st.success("Injected 15 surge patients into the queue!")
-        st.rerun()
+    st.subheader("⚡ Queue Controls")
 
     if st.button("🧪 Load Golden Dataset (22 Synthetic Cases)"):
         records = load_golden_dataset()
@@ -296,7 +253,6 @@ for patient in active_patients:
                 st.warning(f"Missing data: {', '.join(patient['missing_fields'])}")
             if conf_pct < 60:
                 st.warning("⚠️ Low confidence (<60%) — Auto-escalated by 1 level for patient safety.")
-            st.caption(f"⏱ Wait Time: **{wait_mins} mins** / Safe threshold: **{patient['wait_threshold_minutes']} mins**")
 
         with c3:
             if patient["status"] == "AWAITING_REVIEW":

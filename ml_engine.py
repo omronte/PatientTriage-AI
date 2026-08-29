@@ -15,6 +15,17 @@ import numpy as np
 
 logger = logging.getLogger("ml_engine")
 
+try:
+    from presidio_analyzer import AnalyzerEngine
+    from presidio_analyzer.nlp_engine import NlpEngineProvider
+    from presidio_anonymizer import AnonymizerEngine
+    PRESIDIO_AVAILABLE = True
+except ImportError:
+    AnalyzerEngine = None
+    NlpEngineProvider = None
+    AnonymizerEngine = None
+    PRESIDIO_AVAILABLE = False
+
 _PRESIDIO_ANALYZER = None
 _PRESIDIO_ANONYMIZER = None
 
@@ -148,7 +159,6 @@ def train_model():
         objective="multi:softprob",
         num_class=5,
         eval_metric="mlogloss",
-        use_label_encoder=False,
         random_state=42,
         verbosity=0,
     )
@@ -172,37 +182,32 @@ def predict_triage(model, patient: dict) -> dict:
             "method": "xgboost" or "rule_based"
         }
     """
-                                                                       
-                                                                         
-                                                                       
-                                                                        
-                                                                        
-                                                                        
-                                                                           
-                                                                          
-                                         
-    def _val(key, default, cast_fn=float):
-        value = patient.get(key)
-        if value is None:
-            return default
-        try:
-            val = cast_fn(value)
-            if np.isnan(val) or np.isinf(val):
-                return default
-            return val
-        except (ValueError, TypeError):
-            return default
+    patient = patient or {}
 
-                      
-    age = _val("age", 40)
-    heart_rate = _val("heart_rate", 80)
-    respiratory_rate = _val("respiratory_rate", 16)
-    o2_saturation = _val("oxygen_saturation", 98)
-    temperature = _val("temperature", 37.0)
-    gcs_score = _val("gcs_score", 15)
+    def _val(keys, default, cast_fn=float):
+        if isinstance(keys, str):
+            keys = [keys]
+        for k in keys:
+            value = patient.get(k)
+            if value is not None:
+                try:
+                    val = cast_fn(value)
+                    if not (np.isnan(val) or np.isinf(val)):
+                        return val
+                except (ValueError, TypeError):
+                    continue
+        return default
 
-                          
+    age = _val(["age"], 40)
+    heart_rate = _val(["heart_rate", "heartRateBpm", "hr"], 80)
+    respiratory_rate = _val(["respiratory_rate", "respiratoryRate", "rr"], 16)
+    o2_saturation = _val(["oxygen_saturation", "o2SaturationPercent", "o2_sat", "spo2"], 98)
+    temperature = _val(["temperature", "temperatureCelsius", "temp_c", "temp"], 37.0)
+    gcs_score = _val(["gcs_score", "gcsScore", "gcs"], 15)
+
     bp = patient.get("blood_pressure")
+    has_bp = 0
+    systolic_bp = 120
     if bp and isinstance(bp, str) and "/" in bp:
         try:
             systolic_bp = int(float(bp.split("/")[0]))
@@ -210,12 +215,11 @@ def predict_triage(model, patient: dict) -> dict:
         except (ValueError, IndexError):
             systolic_bp = 120
             has_bp = 0
-    elif bp is None:
-        systolic_bp = 120
-        has_bp = 0
     else:
-        systolic_bp = 120
-        has_bp = 0
+        sys_val = _val(["blood_pressure_sys", "bloodPressureSys", "bp_sys", "systolic_bp"], None)
+        if sys_val is not None:
+            systolic_bp = int(sys_val)
+            has_bp = 1
 
     features = np.array([[age, heart_rate, respiratory_rate, o2_saturation,
                           systolic_bp, temperature, gcs_score, has_bp]])
@@ -238,7 +242,6 @@ def predict_triage(model, patient: dict) -> dict:
         except Exception as e:
             logger.error("XGBoost prediction failed: %s — falling back to rules", e)
 
-                         
     return _rule_based_prediction(patient, features[0])
 
 def _rule_based_prediction(patient: dict, features: np.ndarray) -> dict:
@@ -381,6 +384,9 @@ def extract_nlp(chief_complaint: str) -> dict:
     Extracts red flags, symptoms, suspected conditions, dynamic clinical
     reasoning per alert, NLP ambiguity score, and clinical summary.
     """
+    if not isinstance(chief_complaint, str):
+        chief_complaint = str(chief_complaint or "")
+
     if _is_ollama_online():
         try:
             import requests
@@ -415,23 +421,26 @@ Respond ONLY with raw valid JSON."""
                 result_text = response.json().get("response", "")
                 json_match = re.search(r'\{[\s\S]*\}', result_text)
                 if json_match:
-                    parsed = json.loads(json_match.group())
-                    logger.info("NLP analysis via Ollama/Llama-3 succeeded")
-                    return {
-                        "red_flags": parsed.get("red_flags", []),
-                        "symptoms": parsed.get("symptoms", []),
-                        "urgency_cues": parsed.get("urgency_cues", []),
-                        "suspected_conditions": parsed.get("suspected_conditions", []),
-                        "risk_level": parsed.get("risk_level", "MODERATE"),
-                        "alert_reasoning": parsed.get("alert_reasoning", {}),
-                        "nlp_ambiguity_score": float(parsed.get("nlp_ambiguity_score", 0.0)),
-                        "clinical_summary": parsed.get("clinical_summary", ""),
-                        "method": "ollama_llama3",
-                    }
+                    try:
+                        parsed = json.loads(json_match.group())
+                        if isinstance(parsed, dict):
+                            logger.info("NLP analysis via Ollama/Llama-3 succeeded")
+                            return {
+                                "red_flags": list(parsed.get("red_flags") or []),
+                                "symptoms": list(parsed.get("symptoms") or []),
+                                "urgency_cues": list(parsed.get("urgency_cues") or []),
+                                "suspected_conditions": list(parsed.get("suspected_conditions") or []),
+                                "risk_level": str(parsed.get("risk_level") or "MODERATE").upper(),
+                                "alert_reasoning": parsed.get("alert_reasoning") if isinstance(parsed.get("alert_reasoning"), dict) else {},
+                                "nlp_ambiguity_score": float(parsed.get("nlp_ambiguity_score") or 0.0),
+                                "clinical_summary": str(parsed.get("clinical_summary") or ""),
+                                "method": "ollama_llama3",
+                            }
+                    except (json.JSONDecodeError, ValueError, TypeError) as parse_err:
+                        logger.warning("Failed to parse Ollama JSON response (%s) — falling back to keyword NLP", parse_err)
         except Exception as e:
             logger.info("Ollama execution failed (%s) -- falling back to dynamic keyword NLP", e)
 
-                                              
     return _keyword_nlp_fallback(chief_complaint)
 
 def _keyword_nlp_fallback(chief_complaint: str) -> dict:
@@ -439,7 +448,7 @@ def _keyword_nlp_fallback(chief_complaint: str) -> dict:
     Keyword-based NLP extraction as fallback.
     Scans for known clinical red flags and symptoms.
     """
-    text_lower = chief_complaint.lower()
+    text_lower = str(chief_complaint or "").lower()
 
     red_flags = []
     symptoms = []
@@ -452,7 +461,6 @@ def _keyword_nlp_fallback(chief_complaint: str) -> dict:
             else:
                 symptoms.append(keyword)
 
-                  
     urgency_phrases = [
         "sudden onset", "progressively worsening", "unable to",
         "difficulty", "severe", "acute", "worst", "uncontrolled",
@@ -462,7 +470,6 @@ def _keyword_nlp_fallback(chief_complaint: str) -> dict:
         if phrase in text_lower:
             urgency_cues.append(phrase)
 
-                          
     if len(red_flags) >= 2:
         risk_level = "CRITICAL"
     elif len(red_flags) >= 1:
@@ -472,10 +479,8 @@ def _keyword_nlp_fallback(chief_complaint: str) -> dict:
     else:
         risk_level = "LOW"
 
-                                                        
     suspected = _infer_conditions(text_lower)
 
-                                                                 
     ambiguous_tokens = ["vague", "feeling off", "strange", "unwell", "unclear", "unsure", "incomplete", "scratch", "tiny", "mild", "fine"]
     if any(tok in text_lower for tok in ambiguous_tokens):
         nlp_ambiguity_score = 0.85
@@ -500,6 +505,7 @@ def _keyword_nlp_fallback(chief_complaint: str) -> dict:
 
 def _infer_conditions(text: str) -> list:
     """Infer suspected conditions from keyword patterns."""
+    text = str(text or "").lower()
     conditions = []
 
     if "chest pain" in text and ("jaw" in text or "arm" in text or "crushing" in text):
@@ -540,35 +546,13 @@ def _infer_conditions(text: str) -> list:
 
     return conditions
 
-                                                                             
-                                                
-                                                                             
-
-def scrub_phi(text: str) -> str:
-    """
-    Remove Protected Health Information (names, phone numbers, etc.)
-    from text before NLP processing.
-
-    Uses regex scrubbing combined with Microsoft Presidio for defense in depth.
-    """
+def _init_presidio() -> bool:
+    """Initialize Presidio Analyzer and Anonymizer engines with spaCy model."""
     global _PRESIDIO_ANALYZER, _PRESIDIO_ANONYMIZER
-
-    if not isinstance(text, str):
-        return ""
-
-                                           
-    scrubbed = _regex_phi_scrub(text)
-
-                                                                                   
-    try:
-                                          
-        from presidio_analyzer import AnalyzerEngine
-                                          
-        from presidio_analyzer.nlp_engine import NlpEngineProvider
-                                          
-        from presidio_anonymizer import AnonymizerEngine
-
-        if _PRESIDIO_ANALYZER is None:
+    if not PRESIDIO_AVAILABLE or AnalyzerEngine is None:
+        return False
+    if _PRESIDIO_ANALYZER is None:
+        try:
             nlp_provider = NlpEngineProvider(nlp_configuration={
                 "nlp_engine_name": "spacy",
                 "models": [{"lang_code": "en", "model_name": "en_core_web_sm"}],
@@ -578,43 +562,51 @@ def scrub_phi(text: str) -> str:
                 supported_languages=["en"],
             )
             _PRESIDIO_ANONYMIZER = AnonymizerEngine()
+        except Exception as e:
+            logger.warning("Presidio initialization failed (%s) -- fallback to regex scrubbing", e)
+            return False
+    return True
 
-        results = _PRESIDIO_ANALYZER.analyze(
-            text=scrubbed,
-            entities=["PERSON", "PHONE_NUMBER", "EMAIL_ADDRESS", "US_SSN", "MEDICAL_LICENSE", "LOCATION", "DATE_TIME"],
-            language="en",
-        )
+def scrub_phi(text: str) -> str:
+    """
+    Remove Protected Health Information (names, phone numbers, etc.)
+    from text before NLP processing.
 
-        anonymized = _PRESIDIO_ANONYMIZER.anonymize(text=scrubbed, analyzer_results=results)
-        logger.info("PHI scrubbed: %d additional entities found via Presidio", len(results))
-        return anonymized.text
+    Uses regex scrubbing combined with Microsoft Presidio for defense in depth.
+    """
+    if not isinstance(text, str):
+        return ""
 
-    except ImportError:
-        return scrubbed
-    except Exception as e:
-        logger.warning("Presidio error (%s) -- returning regex scrubbed text", e)
-        return scrubbed
+    scrubbed = _regex_phi_scrub(text)
+
+    if _init_presidio() and _PRESIDIO_ANALYZER and _PRESIDIO_ANONYMIZER:
+        try:
+            results = _PRESIDIO_ANALYZER.analyze(
+                text=scrubbed,
+                entities=["PERSON", "PHONE_NUMBER", "EMAIL_ADDRESS", "US_SSN", "MEDICAL_LICENSE", "LOCATION", "DATE_TIME"],
+                language="en",
+            )
+            anonymized = _PRESIDIO_ANONYMIZER.anonymize(text=scrubbed, analyzer_results=results)
+            logger.info("PHI scrubbed: %d additional entities found via Presidio", len(results))
+            return anonymized.text
+        except Exception as e:
+            logger.warning("Presidio error (%s) -- returning regex scrubbed text", e)
+            return scrubbed
+
+    return scrubbed
 
 def _regex_phi_scrub(text: str) -> str:
     """Regex-based fallback for PHI removal."""
     if not isinstance(text, str):
         return ""
 
-                                                                   
     text = re.sub(r'\b(?:Patient(?:\s+Name)?|Name)\s*:\s*[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b', '[REDACTED_NAME]', text, flags=re.IGNORECASE)
-                                                                                            
     text = re.sub(r'\b(?:Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b', '[REDACTED_NAME]', text)
-                                                                       
     text = re.sub(r'\b(?:DOB|Date of Birth)[:\s]+\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}\b', '[REDACTED_DATE]', text, flags=re.IGNORECASE)
-                                                                                
     text = re.sub(r'(?:\+?1[-.\s]?)?\(?\b\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b', '[REDACTED_PHONE]', text)
-         
     text = re.sub(r'\b(?:\d{3}-\d{2}-\d{4}|SSN[:\s]*\d{9})\b', '[REDACTED_SSN]', text, flags=re.IGNORECASE)
-           
     text = re.sub(r'\b[\w.+-]+@[\w-]+\.[\w.-]+\b', '[REDACTED_EMAIL]', text)
-                                             
     text = re.sub(r'\bMRN[:\s#]*\d{5,}\b', '[REDACTED_MRN]', text, flags=re.IGNORECASE)
-                                                                                      
     text = re.sub(r"\b\d+\s+[A-Za-z0-9\s,.'-]+\s+(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Lane|Ln|Drive|Dr|Way|Court|Ct|Terrace|Ter|Place|Pl|Circle|Cir|Highway|Hwy|Parkway|Pkwy)\b", '[REDACTED_ADDRESS]', text, flags=re.IGNORECASE)
 
     return text

@@ -8,7 +8,7 @@
       content="PatientTriage.ai — AI-powered emergency department triage decision-support system. Helps hospital staff prioritize and route patients using explainable AI while keeping the human in the loop."
     />
     <title>PatientTriage.ai — ED Triage Decision Support</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=2.0" />
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%2300D9C0'/%3E%3Cpath d='M80 50H65L55 80L40 20L30 50H20' stroke='%230A0E14' stroke-width='7' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
@@ -67,9 +67,6 @@
         </div>
 
         <div class="topbar-status">
-          <span class="status-chip demo-mode-chip" style="background: rgba(0, 217, 192, 0.12); border: 1px solid rgba(0, 217, 192, 0.4); color: #00D9C0; font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 9999px; letter-spacing: 0.05em; text-transform: uppercase;">
-            🧪 Synthetic Demo Data
-          </span>
           <span class="status-chip">
             <span class="status-dot"></span>
             <span id="refresh-status">Live Monitoring</span>
@@ -123,20 +120,6 @@
             Register New Patient
           </button>
 
-          <!-- Surge Simulation Button -->
-          <button id="btn-surge" class="btn-surge" type="button">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-            </svg>
-            Simulate Surge (3× Volume)
-          </button>
 
           <!-- Audit Log Button -->
           <button id="btn-audit-log" class="btn-audit-log" type="button">
@@ -650,6 +633,6 @@
       </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=2.0"></script>
   </body>
 </html>
