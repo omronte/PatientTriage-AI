@@ -69,7 +69,7 @@ $$
 
 If confidence falls below 60%, the workflow escalates the ESI suggestion by one level for additional clinical attention. This is a prototype safety heuristic, not a clinical protocol.
 
-### Dynamic waiting queue (Phase 2)
+### Dynamic waiting queue 
 
 Patients remain backend-owned waiting records after initial triage. A lightweight
 FastAPI background task scans active `WAITING` records, calculates elapsed time,
@@ -90,7 +90,7 @@ safety conditions. New vitals flow through the existing Phase 1 triage pipeline;
 meaningful deterioration generates a reassessment event. The system recommends
 reassessment, while clinicians retain the final decision and acknowledgment.
 
-### Clinician dashboard and accountability (Phase 3)
+### Clinician dashboard and accountability 
 
 The browser dashboard presents AI recommendations as decision support, including
 confidence in the recommendation, safety flags, missing information, wait status,
@@ -287,7 +287,7 @@ Example override request:
 }
 ```
 
-## Golden Synthetic Dataset & Safety Evaluation (Phase 4/5)
+## Golden Synthetic Dataset & Safety Evaluation 
 
 ### 1. Synthetic Data & Privacy Assurance
 All patient records across `data/golden/golden_patients.csv`, `data/golden/golden_patients.json`, and database seeds are **100% synthetic demonstration data**. No real patient data, medical record numbers (MRNs), or protected health information (PHI) are used. Identifiers use obvious demonstration prefixes (`DEMO-P001` through `DEMO-P022`).
@@ -374,7 +374,7 @@ The evaluation pipeline tracks:
 
 ### 6. Prototype Disclaimer & No Medical Claims
 > [!CAUTION]
-> **NOT CLINICALLY VALIDATED FOR MEDICAL DIAGNOSIS**: All clinical thresholds (e.g. 38.5°C fever, SpO2 thresholds) and simulated expected outputs represent prototype safety design assumptions. They are intended solely for demonstrating age-aware and uncertainty-aware algorithmic behavior and must undergo rigorous clinical validation before any real-world healthcare deployment.
+> **NOT CLINICALLY VALIDATED FOR MEDICAL DIAGNOSIS**: All clinical thresholds (e.g., 38.5°C fever, SpO2 thresholds) and simulated expected outputs represent prototype safety design assumptions. They are intended solely for demonstrating age-aware and uncertainty-aware algorithmic behavior and must undergo rigorous clinical validation before any real-world healthcare deployment.
 
 ## Responsible AI and privacy
 
