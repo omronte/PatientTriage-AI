@@ -1,8 +1,3 @@
-"""
-server.py — FastAPI Backend for PatientTriage.ai
-Fully Database-Driven: All patients, registrations, overrides, and surge data
-are persistently stored in SQLite via SQLAlchemy.
-"""
 
 import json
 import os
@@ -24,7 +19,8 @@ from backend.database import (
     init_db, log_decision, get_recent_logs, get_audit_stats,
     db_save_patient, db_get_all_patients, db_get_patient,
     db_update_patient_review, db_count_patients, db_clear_all_patients, db_delete_patient,
-    db_update_queue_state, db_add_safety_event, db_get_safety_events, db_get_all_safety_events
+    db_update_queue_state, db_add_safety_event, db_get_safety_events, db_get_all_safety_events,
+    SessionLocal, PatientRecord
 )
 from backend.queue_monitor import get_queue_projection, monitor_once, acknowledge_reassessment, detect_vital_deterioration
 from ml_engine import train_model, predict_triage, extract_nlp, scrub_phi
@@ -81,6 +77,7 @@ QUEUE_MONITOR_TASK = None
                                                                              
 
 class NewPatientRequest(BaseModel):
+    name: Optional[str] = None
     age: int
     gender: str
     chief_complaint: str
@@ -324,12 +321,6 @@ async def update_patient_vitals(patient_id: str, req: VitalsUpdateRequest):
     )
 
     new_priority = assessed.get("aiSuggestedPriority", 3)
-
-                                         
-                                        
-                                                
-                                                   
-     
                                                                 
     deteriorated = bool(changes)
     assessed["deteriorationDetected"] = deteriorated
@@ -387,6 +378,35 @@ async def acknowledge_patient_reassessment(patient_id: str):
         raise HTTPException(status_code=404, detail="Patient not found")
     return updated
 
+def _get_next_patient_id(prefix: str = "PT-") -> str:
+    """Generate the next strictly unique patient ID that does not exist in SQLite database."""
+    global PATIENT_COUNTER
+    session = SessionLocal()
+    try:
+        records = session.query(PatientRecord.patient_id).all()
+        existing_ids = {r[0] for r in records if r[0]}
+
+        max_num = 5020
+        for pid in existing_ids:
+            if pid.startswith("PT-"):
+                try:
+                    num = int(pid.split("-")[1])
+                    if 5000 <= num < 6000 and num > max_num:
+                        max_num = num
+                except (ValueError, IndexError):
+                    pass
+
+        candidate_num = max(PATIENT_COUNTER, max_num + 1)
+        candidate = f"{prefix}{candidate_num}"
+        while candidate in existing_ids:
+            candidate_num += 1
+            candidate = f"{prefix}{candidate_num}"
+
+        PATIENT_COUNTER = candidate_num + 1
+        return candidate
+    finally:
+        session.close()
+
 @app.post("/api/patients")
 async def add_patient(req: NewPatientRequest):
     """
@@ -394,18 +414,17 @@ async def add_patient(req: NewPatientRequest):
       1. Runs LangGraph triage pipeline (XGBoost + NLP + Age Safety + Confidence).
       2. Persists new patient record in SQLite database.
     """
-    global PATIENT_COUNTER
-
-    patient_id = f"PT-{PATIENT_COUNTER}"
-    PATIENT_COUNTER += 1
+    patient_id = _get_next_patient_id()
 
     bp = None
     if req.blood_pressure_sys and req.blood_pressure_dia:
         bp = f"{int(req.blood_pressure_sys)}/{int(req.blood_pressure_dia)}"
 
+    display_name = req.name.strip() if req.name and req.name.strip() else "Walk-in Patient"
+
     raw_patient = {
         "id": patient_id,
-        "name": "Walk-in Patient",
+        "name": display_name,
         "age": req.age,
         "gender": req.gender,
         "temperature": req.temperature,
@@ -826,9 +845,24 @@ async def seed_demo_patients():
     if os.path.exists(patients_file):
         with open(patients_file, "r", encoding="utf-8") as f:
             raw_patients = json.load(f)
+        global PATIENT_COUNTER
         for raw in raw_patients:
             assessed = _run_triage_on_raw_patient(raw)
             db_save_patient(assessed)
+        session = SessionLocal()
+        records = session.query(PatientRecord.patient_id).all()
+        session.close()
+        max_num = 5020
+        for r in records:
+            if r[0] and r[0].startswith("PT-"):
+                try:
+                    num = int(r[0].split("-")[1])
+                    if 5000 <= num < 6000 and num > max_num:
+                        max_num = num
+                except (ValueError, IndexError):
+                    pass
+        PATIENT_COUNTER = max_num + 1
+
         return {
             "status": "seeded",
             "count": len(raw_patients),

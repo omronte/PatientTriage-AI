@@ -5,6 +5,8 @@ Uses SQLAlchemy with SQLite for:
   2. Immutable Compliance Audit Logs (every accept/override decision)
 """
 
+from __future__ import annotations
+
 import os
 import json
 import datetime
@@ -405,6 +407,18 @@ def db_save_patient(patient_dict: dict) -> dict:
         else:
             record = existing
             record.status = patient_dict.get("status", record.status)
+            if "name" in patient_dict and patient_dict["name"]:
+                record.name = patient_dict["name"]
+            if "age" in patient_dict and patient_dict["age"] is not None:
+                record.age = patient_dict["age"]
+            if "biologicalSex" in patient_dict and patient_dict["biologicalSex"]:
+                record.gender = patient_dict["biologicalSex"]
+            elif "gender" in patient_dict and patient_dict["gender"]:
+                record.gender = patient_dict["gender"]
+            if "chiefComplaint" in patient_dict and patient_dict["chiefComplaint"]:
+                record.chief_complaint = patient_dict["chiefComplaint"]
+            elif "chief_complaint" in patient_dict and patient_dict["chief_complaint"]:
+                record.chief_complaint = patient_dict["chief_complaint"]
             if "nurseAssignedPriority" in patient_dict:
                 record.nurse_assigned_priority = patient_dict["nurseAssignedPriority"]
             if "overrideReason" in patient_dict:

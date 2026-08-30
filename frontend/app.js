@@ -91,6 +91,7 @@ function cacheDOMReferences() {
   DOM.btnAddPatient = document.getElementById('btn-add-patient');
   DOM.btnModalCancel = document.getElementById('btn-modal-cancel');
   DOM.btnModalSubmit = document.getElementById('btn-modal-submit');
+  DOM.formName = document.getElementById('form-name');
   DOM.formAge = document.getElementById('form-age');
   DOM.formSex = document.getElementById('form-sex');
   DOM.formComplaint = document.getElementById('form-complaint');
@@ -327,18 +328,20 @@ function createPatientCard(patient) {
 }
 
 function selectPatient(patientId) {
+  const isDifferent = appState.selectedPatientId !== patientId;
   appState.selectedPatientId = patientId;
   renderQueue();
-  renderDetailView();
+  renderDetailView(isDifferent);
 }
 
-function renderDetailView() {
+function renderDetailView(forceResetFooter = false) {
   const patient = appState.patients.find((p) => p.patientId === appState.selectedPatientId);
 
   if (!patient) {
     DOM.emptyState.style.display = 'flex';
     DOM.detailView.classList.remove('visible');
     if (DOM.overdueBanner) DOM.overdueBanner.classList.remove('visible');
+    resetFooterState(null);
     return;
   }
 
@@ -389,7 +392,13 @@ function renderDetailView() {
   renderFactorList(patient);
   renderSafetySummary(patient);
   renderPipelineTrace(patient);
-  resetFooterState(patient);
+
+  // Only reset footer/override panel if explicitly forced (e.g. switching patients or confirmed)
+  // Otherwise, if the clinician is in the middle of overriding, do not close or wipe it!
+  const isOverrideOpen = DOM.overridePanel && DOM.overridePanel.classList.contains('visible');
+  if (forceResetFooter || !isOverrideOpen) {
+    resetFooterState(patient);
+  }
 }
 
 function renderVitals(patient) {
@@ -496,6 +505,8 @@ function resetFooterState(patient) {
   DOM.footerMain.style.display = 'flex';
   DOM.overridePanel.classList.remove('visible');
 
+  if (!patient) return;
+
   const isReviewed = patient.status !== 'AWAITING_REVIEW';
 
   if (isReviewed) {
@@ -599,7 +610,7 @@ async function confirmOverride() {
     patient.nurseAssignedPriority = newPriority;
 
     renderQueue();
-    renderDetailView();
+    renderDetailView(true);
     showToast(`${patient.patientId} overridden: P${patient.aiSuggestedPriority} → P${newPriority}`, 'info');
   } catch (err) {
     console.error('Override failed:', err);
@@ -652,6 +663,7 @@ function openAddPatientModal() {
 function closeAddPatientModal() {
   DOM.modalOverlay.classList.remove('visible');
   // Reset form
+  if (DOM.formName) DOM.formName.value = '';
   DOM.formAge.value = '';
   DOM.formSex.value = 'M';
   DOM.formComplaint.value = '';
@@ -668,9 +680,10 @@ async function submitNewPatient() {
   const age = parseInt(DOM.formAge.value, 10);
   const sex = DOM.formSex.value;
   const complaint = DOM.formComplaint.value.trim();
+  const name = DOM.formName ? DOM.formName.value.trim() : '';
 
-  if (!age || !complaint) {
-    showToast('Age and chief complaint are required', 'info');
+  if (isNaN(age) || age < 0 || !complaint) {
+    showToast('Valid age and chief complaint are required', 'info');
     return;
   }
 
@@ -680,7 +693,7 @@ async function submitNewPatient() {
 
   try {
     // Call backend to register patient and run AI triage
-    const newPatient = await apiPost('/api/patients', {
+    const payload = {
       age: age,
       gender: sex,
       chief_complaint: complaint,
@@ -691,16 +704,35 @@ async function submitNewPatient() {
       respiratory_rate: parseFloat(DOM.formRR.value) || null,
       temperature: parseFloat(DOM.formTemp.value) || null,
       gcs_score: parseFloat(DOM.formGCS.value) || null,
-    });
+    };
+    if (name) payload.name = name;
 
-    appState.patients.push(newPatient);
+    const newPatient = await apiPost('/api/patients', payload);
+
+    // Refresh full queue from backend to get authoritative priority ordering
+    try {
+      const refreshedQueue = await apiGet('/api/patients');
+      appState.patients = refreshedQueue;
+    } catch (refreshErr) {
+      if (!appState.patients.some((p) => p.patientId === newPatient.patientId)) {
+        appState.patients.unshift(newPatient);
+      }
+    }
+
     closeAddPatientModal();
     renderQueue();
     selectPatient(newPatient.patientId);
+
+    // Smoothly scroll the new card into view
+    setTimeout(() => {
+      const card = document.querySelector(`.patient-card[data-patient-id="${newPatient.patientId}"]`);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
+
     showToast(`${newPatient.patientId} added — AI: P${newPatient.aiSuggestedPriority} (${Math.round(newPatient.aiConfidenceScore * 100)}% confidence)`, 'success');
   } catch (err) {
     console.error('Add patient failed:', err);
-    showToast('Failed to add patient. Is the backend running?', 'info');
+    showToast('Failed to add patient: ' + (err.message || 'Server error'), 'info');
   } finally {
     DOM.btnModalSubmit.disabled = false;
     DOM.btnModalSubmit.textContent = 'Add to Queue';
@@ -1006,11 +1038,14 @@ async function refreshQueueFromBackend() {
     appState.patients = patients;
     appState.backendConnected = true;
     renderQueue();
-    renderDetailView();
+    const isOverrideOpen = DOM.overridePanel && DOM.overridePanel.classList.contains('visible');
+    if (!isOverrideOpen) {
+      renderDetailView(false);
+    }
     if (DOM.refreshStatus) DOM.refreshStatus.textContent = `Live Monitoring · Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   } catch (err) {
     if (DOM.refreshStatus) DOM.refreshStatus.textContent = 'Queue refresh unavailable';
   }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', init); 
